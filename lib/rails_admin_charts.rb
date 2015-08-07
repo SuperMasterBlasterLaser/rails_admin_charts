@@ -20,11 +20,11 @@ module RailsAdminCharts
 		totals[(Date.today - s.days).to_date] = self.where(:created_at.gte => Date.today - s.days, :created_at.lt => Date.today - (s - 1).days).count
 	  end
 	  
-	  # puts totals
+	  puts totals
 	  
 	  before_count = self.where(:created_at.lte => Date.today - days_between.days).count
 	  
-	  # puts before_count
+	  puts before_count
 	  
 	  (since.to_date..Date.today).each_with_object([]) { |day, a| a << (a.last || before_count) + (totals[day] || totals[day.to_s] || 0) }
     end
