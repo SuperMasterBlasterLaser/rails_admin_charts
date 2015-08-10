@@ -16,13 +16,41 @@ module RailsAdminCharts
 	  days_between = (Date.today - since.to_date).to_i
 	  
 	  totals = Hash.new(0)
-	  days_between.times do |s|
-		totals[(Date.today - s.days).to_date] = self.where(:created_at.gte => Date.today - s.days, :created_at.lt => Date.today - (s - 1).days).count
+	  
+	  user = bindings[:controller]._current_user
+	  
+	  if user._type == 'Admin'
+		days_between.times do |s|
+		  totals[(Date.today - s.days).to_date] = self.where(:created_at.gte => Date.today - s.days, :created_at.lt => Date.today - (s - 1).days).count
+	    end 
+	  elsif user._type == 'Owner'
+	    if self.method_defined? :shop_owner_id
+		   days_between.times do |s|
+		    totals[(Date.today - s.days).to_date] = self.where(:created_at.gte => Date.today - s.days, :created_at.lt => Date.today - (s - 1).days, :shop_owner_id => user.id).count
+	       end
+		   
+		elsif self.method_defined? :owner_id
+		   days_between.times do |s|
+		    totals[(Date.today - s.days).to_date] = self.where(:created_at.gte => Date.today - s.days, :created_at.lt => Date.today - (s - 1).days, :owner_id => user.id).count
+	       end
+		   
+		end
 	  end
 	  
-	  #puts totals
 	  
-	  before_count = self.where(:created_at.lte => Date.today - days_between.days).count
+	  
+	  #puts totals
+	  before_count = 0
+	  if user._type == 'Admin'
+		before_count = self.where(:created_at.lte => Date.today - days_between.days).count
+	  elsif user._type == 'Owner'
+		if self.method_defined? :shop_owner_id
+			before_count = self.where(:created_at.lte => Date.today - days_between.days, :shop_owner_id => user.id).count
+		elsif self.method_defined? :owner_id
+			before_count = self.where(:created_at.lte => Date.today - days_between.days, :owner_id => user.id).count		
+		end
+	  end
+	  
 	  
 	  #puts before_count
 	  
