@@ -9,7 +9,7 @@ module RailsAdmin
         end
 
         register_instance_option :visible do
-          bindings[:abstract_model].model < RailsAdminCharts
+          authorized? && bindings[:abstract_model].model < RailsAdminCharts
         end
 
         register_instance_option :http_methods do
