@@ -8,7 +8,7 @@ module RailsAdminCharts
 
   module ClassMethods
 
-    def total_records_since(since = 30.days.ago)
+    def total_records_since(since = 30.days.ago, user)
       #date_created_at = "Date(#{self.table_name}.created_at)"
       #totals, before_count = self.group(date_created_at).count, self.where(date_created_at + ' < ?', since.to_date).count
       # TODO separate MySQL/Postgres approaches using ActiveRecord::Base.connection.adapter_name or check hash key is_a? String/Date
@@ -19,37 +19,37 @@ module RailsAdminCharts
 	  
 	  #user = bindings[:controller]._current_user
 	  
-	  #if user._type == 'Admin'
+	  if user._type == 'Admin'
 		days_between.times do |s|
 		  totals[(Date.today - s.days).to_date] = self.where(:created_at.gte => Date.today - s.days, :created_at.lt => Date.today - (s - 1).days).count
 	    end 
-	 # elsif user._type == 'Owner'
-	  #  if self.method_defined? :shop_owner_id
-		#   days_between.times do |s|
-		 #   totals[(Date.today - s.days).to_date] = self.where(:created_at.gte => Date.today - s.days, :created_at.lt => Date.today - (s - 1).days, :shop_owner_id => user.id).count
-	      # end
+	 elsif user._type == 'Owner'
+	    if self.method_defined? :shop_owner_id
+		   days_between.times do |s|
+		    totals[(Date.today - s.days).to_date] = self.where(:created_at.gte => Date.today - s.days, :created_at.lt => Date.today - (s - 1).days, :shop_owner_id => user.id).count
+	       end
 		   
-		#elsif self.method_defined? :owner_id
-		 #  days_between.times do |s|
-		  #  totals[(Date.today - s.days).to_date] = self.where(:created_at.gte => Date.today - s.days, :created_at.lt => Date.today - (s - 1).days, :owner_id => user.id).count
-	       #end
+		elsif self.method_defined? :owner_id
+		   days_between.times do |s|
+		    totals[(Date.today - s.days).to_date] = self.where(:created_at.gte => Date.today - s.days, :created_at.lt => Date.today - (s - 1).days, :owner_id => user.id).count
+	       end
 		   
-		#end
-	 # end
+		end
+	 end
 	  
 	  
 	  
 	  #puts totals
-	 # before_count = 0
-	 # if user._type == 'Admin'
+	 before_count = 0
+	  if user._type == 'Admin'
 		before_count = self.where(:created_at.lte => Date.today - days_between.days).count
-	  #elsif user._type == 'Owner'
-		#if self.method_defined? :shop_owner_id
-		#	before_count = self.where(:created_at.lte => Date.today - days_between.days, :shop_owner_id => user.id).count
-		#elsif self.method_defined? :owner_id
-		#	before_count = self.where(:created_at.lte => Date.today - days_between.days, :owner_id => user.id).count		
-		#end
-	  #end
+	  elsif user._type == 'Owner'
+		if self.method_defined? :shop_owner_id
+			before_count = self.where(:created_at.lte => Date.today - days_between.days, :shop_owner_id => user.id).count
+		elsif self.method_defined? :owner_id
+			before_count = self.where(:created_at.lte => Date.today - days_between.days, :owner_id => user.id).count		
+		end
+	  end
 	  
 	  
 	  #puts before_count
@@ -64,13 +64,13 @@ module RailsAdminCharts
       (since.to_date..Date.today).map { |date| deltas[date] ||  deltas[date.to_s] || 0 }
     end
 
-    def graph_data(since=30.days.ago)
+    def graph_data(since=30.days.ago, user)
       [
           {
               name: model_name.plural,
               pointInterval: 1.day * 1000,
               pointStart: since.to_i * 1000,
-              data: self.total_records_since(since)
+              data: self.total_records_since(since, user)
           }
       ]
     end
