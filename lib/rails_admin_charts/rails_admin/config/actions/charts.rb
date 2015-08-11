@@ -8,7 +8,7 @@ module RailsAdmin
           true
         end
 
-        register_instance_option :visible do
+        register_instance_option :visible? do
           authorized? && bindings[:abstract_model].model < RailsAdminCharts
         end
 
